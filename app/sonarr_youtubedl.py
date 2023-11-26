@@ -10,7 +10,7 @@ from datetime import datetime
 import requests
 import schedule
 import yt_dlp
-from utils import (  # NOQA
+from utils import (
     YoutubeDLLogger,
     checkconfig,
     offsethandler,
@@ -180,8 +180,20 @@ class SonarrYTDL(object):
                     if "regex" in wnt:
                         regex = wnt["regex"]
                         if "sonarr" in regex:
-                            ser["sonarr_regex_match"] = regex["sonarr"]["match"]
-                            ser["sonarr_regex_replace"] = regex["sonarr"]["replace"]
+                            ser["sonarr_regex"] = []
+                            logger.debug(f"regex['sonarr']: {regex['sonarr']}")
+                            if isinstance(regex["sonarr"], dict):
+                                ser["sonarr_regex"] = regex["sonarr"]
+                            elif isinstance(regex["sonarr"], list):
+                                for i, _ in enumerate(regex["sonarr"]):
+                                    logger.debug(f"sonarr_regex_i: {i}")
+                                    ser["sonarr_regex"].append(regex["sonarr"][i])
+                            else:
+                                logger.error(
+                                    f"Unable to parse sonarr regex: {regex['sonarr']}"
+                                )
+                            if ser.get("sonarr_regex"):
+                                logger.debug(f"sonarr_regex: {ser['sonarr_regex']}")
                         if "site" in regex:
                             ser["site_regex_match"] = regex["site"]["match"]
                             ser["site_regex_replace"] = regex["site"]["replace"]
@@ -227,10 +239,12 @@ class SonarrYTDL(object):
                 elif eps_date > now:
                     episodes.remove(eps)
                 else:
-                    if "sonarr_regex_match" in ser:
-                        match = ser["sonarr_regex_match"]
-                        replace = ser["sonarr_regex_replace"]
-                        eps["title"] = re.sub(match, replace, eps["title"])
+                    if "sonarr_regex" in ser:
+                        for reg in ser["sonarr_regex"]:
+                            match = reg.get("match")
+                            replace = reg.get("replace")
+                            eps["title"] = re.sub(match, replace, eps["title"])
+                        logger.debug(f"Sonarr Title post-regex: {eps['title']}")
                     needed.append(eps)
                     continue
             if len(episodes) == 0:
