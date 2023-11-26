@@ -1,13 +1,15 @@
-FROM python:3.9-buster
-LABEL maintainer="Martin Jones <whatdaybob@outlook.com>"
+FROM python:3.12-slim-bookworm
+#LABEL maintainer="Martin Jones <whatdaybob@outlook.com>"
+
+RUN pip3 install --upgrade pip
+RUN apt-get update && apt-get upgrade -y
 
 # Update and install ffmpeg
-RUN apt-get update && \
-    apt-get install -y ffmpeg 
+RUN apt-get install -y --no-install-recommends git curl ffmpeg
 
 # Copy and install requirements
 COPY requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt
+RUN pip3 install --no-cache-dir --upgrade -r requirements.txt
 
 # create abc user so root isn't used
 RUN \
@@ -29,11 +31,12 @@ COPY app/ /app
 # update file permissions
 RUN \
     chmod a+x \
-    /app/sonarr_youtubedl.py \ 
+    /app/sonarr_youtubedl.py \
     /app/utils.py \
     /app/config.yml.template
 
 # ENV setup
 ENV CONFIGPATH /config/config.yml
 
-CMD [ "python", "-u", "/app/sonarr_youtubedl.py" ]
+CMD [ "python3", "-u", "/app/sonarr_youtubedl.py" ]
+#CMD [ "tail", "-f", "/dev/null" ]
