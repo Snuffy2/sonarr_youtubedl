@@ -24,8 +24,15 @@ def upperescape(string):
     string = string.replace("’", "'")
     string = string.replace("“", '"')
     string = string.replace("”", '"')
+    # Replace >1 space with single space
+    string = re.sub(" +", " ", string)
     # Escape the characters
     string = re.escape(string)
+    # Handle none to multiple spaces
+    string = string.replace("\\ ", "[\\ ]*")
+    # Make parenthesis optional
+    string = string.replace("\\(", "([\\(]?")
+    string = string.replace("\\)", "[\\)]?)?")
     # Make it look for and as whole or ampersands
     string = string.replace("\\ AND\\ ", "\\ (AND|&)\\ ")
     # Make punctuation optional for human error
@@ -139,7 +146,7 @@ def ytdl_hooks(d):
 
 def setup_logging(lf_enabled=True, lc_enabled=True, debugging=False):
     log_level = logging.INFO
-    log_level = logging.DEBUG if debugging == True else log_level
+    log_level = logging.DEBUG if debugging is True else log_level
     logger = logging.getLogger("sonarr_youtubedl")
     logger.setLevel(log_level)
     log_format = logging.Formatter(
