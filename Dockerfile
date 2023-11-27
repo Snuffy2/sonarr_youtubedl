@@ -30,7 +30,7 @@ COPY app/ /app
 
 # update file permissions
 RUN \
-    chmod a+x \
+    chmod -f a+x \
     /app/sonarr_youtubedl.py \
     /app/utils.py \
     /app/config.yml.template
